@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from psycopg2.errors import OperationalError
 from .models import Autor
 
+class AutorNoEncontradoError(Exception):
+    pass
+
 
 def crear_tablas():
     conn = None
@@ -194,3 +197,34 @@ def actualizar_autor(autor: Autor):
             cur.close()
             conn.close()
     return nuevo_autor
+
+def eliminar_autor(id_autor):
+    conn = None
+    eliminado = False
+    try:
+        conn = psycopg2.connect(
+            dbname = os.getenv('BN_NAME'),
+            user = os.getenv('BD_USER'),
+            password = os.getenv('BD_PASSWORD'),
+            host = os.getenv('BD_HOST')
+        )
+        cur = conn.cursor()
+        query = """
+        DELETE FROM catautores
+        WHERE id_autor = %s
+        """
+
+        cur.execute(query, (id_autor,))
+        if cur.rowcount == 0:
+            conn.commit()
+            raise AutorNoEncontradoError(f"No se encontró el autor con el ID: {id_autor}")
+        else:
+            conn.commit()
+            eliminado = True
+    except (Exception, OperationalError) as e:
+        print(f"Ocurrió un error en la capa de datos al intentar eliminar el autor con ID: {id_autor}")
+    finally:
+        if conn is not None:
+            cur.close()
+            conn.close()
+    return eliminado

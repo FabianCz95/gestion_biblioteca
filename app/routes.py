@@ -54,3 +54,6 @@ def update_autor(id_autor):
     else:
         return jsonify({"message": "Faltan datos obligatorios (primer_nombre, primer_apellido)."}), 400
 
+@routes_bp.route('/autores/<int:id_autor>', methods=['DELETE'])
+def delete_autor(id_autor):
+    autor: Autor = library_manager
